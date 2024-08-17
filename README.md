@@ -79,7 +79,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
-## Payload Examples
+## Payload Examples in JSON
 
 # Creating an Event with Recurring Pattern
 
@@ -94,10 +94,10 @@ This repository contains a Laravel application based on Domain Driven Design pri
         "description": "Example Description 01",
         "start": "2024-08-20T10:00:00",
         "end": "2024-08-30T10:00:00",
-        "recurring_pattern": [
+        "recurring_pattern": {
             "frequency": "daily",
             "repeat_until": "2024-08-30T10:00:00",
-        ]
+        }
     }
 
     ```
@@ -133,10 +133,10 @@ This repository contains a Laravel application based on Domain Driven Design pri
         "description": "Example Description 01 Edited",
         "start": "2024-08-25T10:00:00",
         "end": "2024-08-30T10:00:00",
-        "recurring_pattern": [
+        "recurring_pattern": {
             "frequency": "daily",
             "repeat_until": "2024-08-30T10:00:00",
-        ]
+        }
     }
 
     ```
