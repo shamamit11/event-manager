@@ -79,9 +79,9 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
-## Payload Examples in JSON
+# Payload Examples in JSON
 
-# Creating an Event with Recurring Pattern
+## Creating an Event with Recurring Pattern
 
 -   Endpoint: http://127.0.0.1:8000/api/events
 
@@ -102,7 +102,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
-# Creating an Event without Recurring Pattern
+## Creating an Event without Recurring Pattern
 
 -   Endpoint: http://127.0.0.1:8000/api/events
 
@@ -119,7 +119,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
-# Updating an Event
+## Updating an Event
 
 -   Endpoint: http://127.0.0.1:8000/api/events/1
 
@@ -141,7 +141,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
-# List Events within the Date Range
+## List Events within the Date Range
 
 -   Endpoint: http://127.0.0.1:8000/api/events/list?start=&end=&per_page=&page=
 
@@ -153,7 +153,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
-# Delete Event
+## Delete Event
 
 -   Endpoint: http://127.0.0.1:8000/api/event/1
 
