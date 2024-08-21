@@ -6,12 +6,14 @@ use App\Domains\Calendar\ValueObjects\EventDateRange;
 use App\Domains\Calendar\ValueObjects\RecurringPattern;
 use App\Domains\Calendar\Entities\Event;
 use App\Application\UseCases\UpdateEventUseCase;
+use App\Application\Services\OccurrenceGenerator;
 use App\Domains\Calendar\Exceptions\OverlappingEventException;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->eventRepository = Mockery::mock(EventRepositoryInterface::class);
+    $this->occurrenceGenerator = Mockery::mock(OccurrenceGenerator::class);
 });
 
 test('updates an event successfully', function () {
@@ -32,6 +34,8 @@ test('updates an event successfully', function () {
         new RecurringPattern('weekly', new DateTime('2026-09-01T10:00:00'))
     );
 
+    $occurrences = [$updatedEvent];
+
     $this->eventRepository
         ->shouldReceive('findById')
         ->with(1)
@@ -41,6 +45,23 @@ test('updates an event successfully', function () {
         ->shouldReceive('findOverlapping')
         ->with(Mockery::type(EventDateRange::class))
         ->andReturn([]);
+
+
+    $this->occurrenceGenerator
+        ->shouldReceive('generateOccurrences')
+        ->with(
+            'Updated Title',
+            'Updated Description',
+            Mockery::type(EventDateRange::class),
+            Mockery::type(RecurringPattern::class)
+        )
+        ->andReturn($occurrences);
+
+    $this->eventRepository
+        ->shouldReceive('deleteById')
+        ->once()
+        ->with(1)
+        ->andReturn();
 
     $this->eventRepository
         ->shouldReceive('save')
@@ -55,7 +76,7 @@ test('updates an event successfully', function () {
         }))
         ->andReturn($updatedEvent);
 
-    $updateEventUseCase = new UpdateEventUseCase($this->eventRepository);
+    $updateEventUseCase = new UpdateEventUseCase($this->eventRepository, $this->occurrenceGenerator);
 
     $updateEventUseCase->execute(
         1,
@@ -68,7 +89,7 @@ test('updates an event successfully', function () {
         '2026-09-01T10:00:00'
     );
 
-    $this->eventRepository->shouldHaveReceived('save');
+    $this->eventRepository->shouldHaveReceived('save')->twice();
 });
 
 test('throws an exception if the event to be updated does not exist', function () {
@@ -77,7 +98,7 @@ test('throws an exception if the event to be updated does not exist', function (
         ->with(1)
         ->andReturn(null);
 
-    $updateEventUseCase = new UpdateEventUseCase($this->eventRepository);
+    $updateEventUseCase = new UpdateEventUseCase($this->eventRepository, $this->occurrenceGenerator);
 
     expect(function () use ($updateEventUseCase) {
         $updateEventUseCase->execute(
@@ -120,7 +141,7 @@ test('throws an exception if there are overlapping events', function () {
         ->with(Mockery::type(EventDateRange::class))
         ->andReturn([$overlappingEvent]);
 
-    $updateEventUseCase = new UpdateEventUseCase($this->eventRepository);
+    $updateEventUseCase = new UpdateEventUseCase($this->eventRepository, $this->occurrenceGenerator);
 
     expect(function () use ($updateEventUseCase) {
         $updateEventUseCase->execute(

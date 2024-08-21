@@ -173,7 +173,10 @@ it('can lists events', function () {
         ]);
 
     $response->assertJsonFragment([
-        'title' => 'Event 1',
+        'title' => 'Event 1'
+    ]);
+
+    $response->assertJsonFragment([
         'title' => 'Event 2'
     ]);
 

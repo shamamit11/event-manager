@@ -7,15 +7,18 @@ use App\Domains\Calendar\Repositories\EventRepositoryInterface;
 use App\Domains\Calendar\ValueObjects\EventDateRange;
 use App\Domains\Calendar\ValueObjects\RecurringPattern;
 use App\Domains\Calendar\Exceptions\OverlappingEventException;
+use App\Application\Services\OccurrenceGenerator;
 use DateTime;
 
 class CreateEventUseCase
 {
     private EventRepositoryInterface $eventRepository;
+    private OccurrenceGenerator $occurrenceGenerator;
 
-    public function __construct(EventRepositoryInterface $eventRepository)
+    public function __construct(EventRepositoryInterface $eventRepository, OccurrenceGenerator $occurrenceGenerator)
     {
         $this->eventRepository = $eventRepository;
+        $this->occurrenceGenerator = $occurrenceGenerator;
     }
 
     public function execute(string $title, ?string $description, string $start, string $end, bool $recurringPattern, ?string $frequency, ?string $repeat_until): Event
@@ -35,7 +38,7 @@ class CreateEventUseCase
             $repeatUntilDateTime = new DateTime($repeat_until);
             $recurringPatternObject = new RecurringPattern($frequency, $repeatUntilDateTime);
 
-            $occurrences = $this->generateOccurrences($title, $description, $dateRange, $recurringPatternObject);
+            $occurrences = $this->occurrenceGenerator->generateOccurrences($title, $description, $dateRange, $recurringPatternObject);
         }
 
         $newEvent = new Event(
@@ -59,39 +62,5 @@ class CreateEventUseCase
         }
 
         return $savedEvent;
-    }
-
-    private function generateOccurrences(string $title, ?string $description, EventDateRange $dateRange, RecurringPattern $recurringPattern): array
-    {
-        $occurrences = [];
-        $startDateTime = clone $dateRange->getStart();
-        $endDateTime = clone $dateRange->getEnd();
-        $intervalSpec = $this->getDateIntervalSpec($recurringPattern->getFrequency());
-
-        while ($startDateTime <= $recurringPattern->getRepeatUntil()) {
-            $newDateRange = new EventDateRange(clone $startDateTime, clone $endDateTime);
-            $occurrences[] = new Event(null, $title, $description, $newDateRange, null);
-
-            $startDateTime->add(new \DateInterval($intervalSpec));
-            $endDateTime->add(new \DateInterval($intervalSpec));
-        }
-
-        return $occurrences;
-    }
-
-    private function getDateIntervalSpec(string $frequency): string
-    {
-        switch ($frequency) {
-            case 'daily':
-                return 'P1D';
-            case 'weekly':
-                return 'P1W';
-            case 'monthly':
-                return 'P1M';
-            case 'yearly':
-                return 'P1Y';
-            default:
-                throw new \Exception("Invalid frequency: $frequency");
-        }
     }
 }

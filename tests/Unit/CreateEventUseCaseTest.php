@@ -6,12 +6,14 @@ use App\Domains\Calendar\ValueObjects\EventDateRange;
 use App\Domains\Calendar\ValueObjects\RecurringPattern;
 use App\Domains\Calendar\Entities\Event;
 use App\Application\UseCases\CreateEventUseCase;
+use App\Application\Services\OccurrenceGenerator;
 use App\Domains\Calendar\Exceptions\OverlappingEventException;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->eventRepository = Mockery::mock(EventRepositoryInterface::class);
+    $this->occurrenceGenerator = Mockery::mock(OccurrenceGenerator::class);
 });
 
 test('creates an event successfully', function () {
@@ -44,7 +46,12 @@ test('creates an event successfully', function () {
         }))
         ->andReturn($event);
 
-    $createEventUseCase = new CreateEventUseCase($this->eventRepository);
+    $this->occurrenceGenerator
+        ->shouldReceive('generateOccurrences')
+        ->with('Test Event', 'Event Description', Mockery::type(EventDateRange::class), Mockery::type(RecurringPattern::class))
+        ->andReturn([]);
+
+    $createEventUseCase = new CreateEventUseCase($this->eventRepository, $this->occurrenceGenerator);
 
     $result = $createEventUseCase->execute(
         'Test Event',
@@ -75,7 +82,7 @@ test('throws an exception if there are overlapping events', function () {
         ->with(Mockery::type(EventDateRange::class))
         ->andReturn([new Event(1, 'Overlapping Event', null, $eventDateRange, null)]);
 
-    $createEventUseCase = new CreateEventUseCase($this->eventRepository);
+    $createEventUseCase = new CreateEventUseCase($this->eventRepository, $this->occurrenceGenerator);
 
     expect(function () use ($createEventUseCase) {
         $createEventUseCase->execute(
@@ -92,7 +99,7 @@ test('throws an exception if there are overlapping events', function () {
 
 test('throws an exception if frequency or repeat_until is missing for recurring events', function () {
 
-    $createEventUseCase = new CreateEventUseCase($this->eventRepository);
+    $createEventUseCase = new CreateEventUseCase($this->eventRepository, $this->occurrenceGenerator);
 
     expect(function () use ($createEventUseCase) {
         $createEventUseCase->execute(
