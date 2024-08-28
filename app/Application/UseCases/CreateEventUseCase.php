@@ -21,7 +21,7 @@ class CreateEventUseCase
         $this->occurrenceGenerator = $occurrenceGenerator;
     }
 
-    public function execute(string $title, ?string $description, string $start, string $end, bool $recurringPattern, ?string $frequency, ?string $repeat_until): Event
+    public function execute(string $title, ?string $description, string $start, string $end, bool $recurringPattern, ?string $frequency, ?string $repeat_until, ?int $parentId = null): Event
     {
         $startDateTime = new DateTime($start);
         $endDateTime = new DateTime($end);
@@ -57,8 +57,12 @@ class CreateEventUseCase
 
         $savedEvent = $this->eventRepository->save($newEvent);
 
-        foreach ($occurrences as $occurrence) {
-            $this->eventRepository->save($occurrence);
+        if ($recurringPattern) {
+            // Update the parent_id for all occurrences and save
+            foreach ($occurrences as $occurrence) {
+                $occurrence->setParentId($savedEvent->getId());
+                $this->eventRepository->save($occurrence);
+            }
         }
 
         return $savedEvent;

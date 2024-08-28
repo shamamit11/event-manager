@@ -11,6 +11,7 @@ use App\Application\DTOs\EventDTO;
 use App\Interfaces\Http\Requests\CreateEventRequest;
 use App\Interfaces\Http\Requests\UpdateEventRequest;
 use App\Interfaces\Http\Requests\ListEventsRequest;
+use App\Interfaces\Http\Resources\EventResource;
 use Illuminate\Http\JsonResponse;
 
 class EventController extends Controller
@@ -58,22 +59,13 @@ class EventController extends Controller
                 $eventDTO->end,
                 $eventDTO->recurringPattern,
                 $eventDTO->frequency,
-                $eventDTO->repeat_until
+                $eventDTO->repeat_until,
+                $eventDTO->parentId
             );
 
             $response = [
                 'message' => 'Event created successfully',
-                'event' => [
-                    'id' => $createdEvent->id,
-                    'title' => $createdEvent->title,
-                    'description' => $createdEvent->description,
-                    'start' => $createdEvent->getDateRange()->getStart()->format('Y-m-d\TH:i:s'),
-                    'end' => $createdEvent->getDateRange()->getEnd()->format('Y-m-d\TH:i:s'),
-                    'recurring_pattern' => $createdEvent->getRecurringPattern() ? [
-                        'frequency' => $createdEvent->getRecurringPattern()->getFrequency(),
-                        'repeat_until' => $createdEvent->getRecurringPattern()->getRepeatUntil()->format('Y-m-d\TH:i:s'),
-                    ] : null,
-                ]
+                'event' => new EventResource($createdEvent),
             ];
 
             return response()->json($response, 201);
@@ -101,7 +93,7 @@ class EventController extends Controller
         );
 
         try {
-            $this->updateEventUseCase->execute(
+            $updatedEvent = $this->updateEventUseCase->execute(
                 $id,
                 $eventDTO->title,
                 $eventDTO->description,
@@ -109,13 +101,16 @@ class EventController extends Controller
                 $eventDTO->end,
                 $eventDTO->recurringPattern,
                 $eventDTO->frequency,
-                $eventDTO->repeat_until
+                $eventDTO->repeat_until,
+                $eventDTO->parentId
             );
 
-            return response()->json([
+            $response = [
                 'message' => 'Event updated successfully',
-                'event' => $eventDTO
-            ], 200);
+                'event' => new EventResource($updatedEvent),
+            ];
+
+            return response()->json($response, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 409);
         }
@@ -130,7 +125,17 @@ class EventController extends Controller
 
         try {
             $events = $this->listEventsUseCase->execute($start, $end, $perPage, $page);
-            return response()->json($events, 200);
+
+            //return response()->json(EventResource::collection($events), 200);
+
+            //dd($events);
+
+            return response()->json(EventResource::collection($events)->response()->getData(true), 200);
+
+            //return EventResource::collection($events)->response();
+
+            //return response()->json($events, 200);
+
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

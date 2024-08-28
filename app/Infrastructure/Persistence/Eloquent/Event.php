@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $frequency
  * @property \Illuminate\Support\Carbon|null $repeat_until
  * @property bool $recurring_pattern
+ * @property int $parent_id
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
@@ -31,7 +32,8 @@ class Event extends Model
         'end',
         'recurring_pattern',
         'frequency',
-        'repeat_until'
+        'repeat_until',
+        'parent_id',
     ];
 
     protected $casts = [

@@ -9,7 +9,6 @@ use App\Domains\Calendar\ValueObjects\RecurringPattern;
 use App\Domains\Calendar\Exceptions\OverlappingEventException;
 use App\Application\Services\OccurrenceGenerator;
 use DateTime;
-use Illuminate\Support\Facades\DB;
 
 class UpdateEventUseCase
 {
@@ -22,7 +21,7 @@ class UpdateEventUseCase
         $this->occurrenceGenerator = $occurrenceGenerator;
     }
 
-    public function execute(int $id, string $title, ?string $description, string $start, string $end, bool $recurringPattern, ?string $frequency, ?string $repeat_until): void
+    public function execute(int $id, string $title, ?string $description, string $start, string $end, bool $recurringPattern, ?string $frequency, ?string $repeat_until, ?int $parentId = null): Event
     {
         $existingEvent = $this->eventRepository->findById($id);
 
@@ -62,14 +61,26 @@ class UpdateEventUseCase
             throw new OverlappingEventException("The event overlaps with an existing event.");
         }
 
-        if ($existingEvent->getRecurringPattern()) {
-            $this->eventRepository->deleteById($existingEvent->id);
+        $savedEvent = $this->eventRepository->save($updatedEvent);
+
+        if ($recurringPattern) {
+            // Delete old occurrences
+            if ($existingEvent->getRecurringPattern()) {
+                $this->eventRepository->deleteOccurrencesByParentId($existingEvent->id);
+            }
+
+            // Save new occurrences
+            foreach ($occurrences as $occurrence) {
+                $occurrence->setParentId($savedEvent->getId());
+                $this->eventRepository->save($occurrence);
+            }
+        } else {
+            // Delete occurrences if the event is no longer recurring
+            if ($existingEvent->getRecurringPattern()) {
+                $this->eventRepository->deleteOccurrencesByParentId($savedEvent->getId());
+            }
         }
 
-        $this->eventRepository->save($updatedEvent);
-
-        foreach ($occurrences as $occurrence) {
-            $this->eventRepository->save($occurrence);
-        }
+        return $savedEvent;
     }
 }

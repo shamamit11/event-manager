@@ -18,8 +18,10 @@ return new class extends Migration
             $table->dateTime('start');
             $table->dateTime('end');
             $table->boolean('recurring_pattern')->default(false);
-            $table->string('frequency')->nullable();
+            //$table->string('frequency')->nullable();
+            $table->enum('frequency', ['daily', 'weekly', 'monthly', 'yearly'])->nullable();
             $table->dateTime('repeat_until')->nullable();
+            $table->foreignId('parent_id')->nullable()->constrained('events')->cascadeOnDelete();
             $table->timestamps();
         });
     }

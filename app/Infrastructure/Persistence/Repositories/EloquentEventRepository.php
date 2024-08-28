@@ -24,6 +24,7 @@ class EloquentEventRepository implements EventRepositoryInterface
                 'recurring_pattern' => $event->hasRecurringPattern(),
                 'frequency' => $event->hasRecurringPattern() ? $event->recurringPattern->frequency : null,
                 'repeat_until' => $event->hasRecurringPattern() ? $event->recurringPattern->repeat_until->format('Y-m-d H:i:s') : null,
+                'parent_id' => $event->getParentId()
             ]
         );
 
@@ -39,7 +40,8 @@ class EloquentEventRepository implements EventRepositoryInterface
             $eloquentEvent->recurring_pattern ? new RecurringPattern(
                 $eloquentEvent->frequency,
                 new \DateTime($eloquentEvent->repeat_until)
-            ) : null
+            ) : null,
+            $eloquentEvent->parent_id
         );
     }
 
@@ -50,13 +52,21 @@ class EloquentEventRepository implements EventRepositoryInterface
                 ->where('end', '>', $dateRange->getStart()->format('Y-m-d H:i:s'));
         })->get();
 
+        // $events = EloquentEvent::where(function ($query) use ($dateRange) {
+        //     $query->where(function ($q) use ($dateRange) {
+        //         $q->where('start', '<', $dateRange->getEnd()->format('Y-m-d H:i:s'))
+        //             ->where('end', '>', $dateRange->getStart()->format('Y-m-d H:i:s'));
+        //     });
+        // })->get();
+
         return $events->map(function (EloquentEvent $eloquentEvent) {
             return new DomainEvent(
                 $eloquentEvent->id,
                 $eloquentEvent->title,
                 $eloquentEvent->description,
                 new EventDateRange($eloquentEvent->start, $eloquentEvent->end),
-                $eloquentEvent->recurring_pattern ? new RecurringPattern($eloquentEvent->frequency, $eloquentEvent->repeat_until) : null
+                $eloquentEvent->recurring_pattern ? new RecurringPattern($eloquentEvent->frequency, $eloquentEvent->repeat_until) : null,
+                $eloquentEvent->parent_id
             );
         })->toArray();
     }
@@ -74,7 +84,8 @@ class EloquentEventRepository implements EventRepositoryInterface
             $eloquentEvent->title,
             $eloquentEvent->description,
             new EventDateRange($eloquentEvent->start, $eloquentEvent->end),
-            $eloquentEvent->recurring_pattern ? new RecurringPattern($eloquentEvent->frequency, $eloquentEvent->repeat_until) : null
+            $eloquentEvent->recurring_pattern ? new RecurringPattern($eloquentEvent->frequency, $eloquentEvent->repeat_until) : null,
+            $eloquentEvent->parent_id
         );
     }
 
@@ -93,6 +104,17 @@ class EloquentEventRepository implements EventRepositoryInterface
             throw new EventNotFoundException();
         }
 
+        // Delete recurring events related to this event
+        if ($eloquentEvent->parent_id) {
+            EloquentEvent::where('parent_id', $id)->delete();
+        }
+
         EloquentEvent::destroy($id);
+    }
+
+    public function deleteOccurrencesByParentId(int $parentId): void
+    {
+        // Delete occurrences from the database where parent_id matches the given ID
+        EloquentEvent::where('parent_id', $parentId)->delete();
     }
 }
