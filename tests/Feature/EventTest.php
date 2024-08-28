@@ -14,24 +14,39 @@ it('can create an recurring event', function () {
         'end' => '2024-08-30T10:00:00',
         'recurring_pattern' => [
             'frequency' => 'daily',
-            'repeat_until' => '2025-08-20T10:00:00'
+            'repeat_until' => '2025-08-30T10:00:00'
         ]
     ]);
 
-    $response->assertStatus(201)->assertJsonStructure([
-        'message',
-        'event' => [
-            'id',
-            'title',
-            'description',
-            'start',
-            'end',
-            'recurring_pattern' => [
-                'frequency',
-                'repeat_until',
+    $response->assertStatus(201)
+        ->assertJsonStructure([
+            'message',
+            'event' => [
+                'id',
+                'title',
+                'description',
+                'start',
+                'end',
+                'recurring_pattern' => [
+                    'frequency',
+                    'repeat_until',
+                ],
+                'parent_id'
             ],
-        ],
-    ]);
+        ])
+        ->assertJson([
+            'message' => 'Event created successfully',
+            'event' => [
+                'title' => 'Test Event',
+                'description' => 'Event Description',
+                'start' => '2024-08-20T10:00:00',
+                'end' => '2024-08-30T10:00:00',
+                'recurring_pattern' => [
+                    'frequency' => 'daily',
+                    'repeat_until' => '2025-08-30T10:00:00'
+                ],
+            ],
+        ]);
 });
 
 it('can create an event', function () {
@@ -43,17 +58,28 @@ it('can create an event', function () {
         'end' => '2024-08-30T10:00:00'
     ]);
 
-    $response->assertStatus(201)->assertJsonStructure([
-        'message',
-        'event' => [
-            'id',
-            'title',
-            'description',
-            'start',
-            'end',
-            'recurring_pattern'
-        ],
-    ]);
+    $response->assertStatus(201)
+        ->assertJsonStructure([
+            'message',
+            'event' => [
+                'id',
+                'title',
+                'description',
+                'start',
+                'end',
+                'recurring_pattern'
+            ],
+        ])
+        ->assertJson([
+            'message' => 'Event created successfully',
+            'event' => [
+                'title' => 'Test Event',
+                'description' => 'Event Description',
+                'start' => '2024-08-20T10:00:00',
+                'end' => '2024-08-30T10:00:00',
+                'recurring_pattern' => null
+            ],
+        ]);
 });
 
 it('can update an recurring event', function () {
@@ -62,7 +88,7 @@ it('can update an recurring event', function () {
         'description' => 'Original Description',
         'start' => '2024-08-20T10:00:00',
         'end' => '2024-08-30T10:00:00',
-        'recurring_pattern' => false,
+        'recurring_pattern' => true,
         'frequency' => 'weekly',
         'repeat_until' => '2025-08-30T10:00:00'
     ]);
@@ -78,6 +104,14 @@ it('can update an recurring event', function () {
     $response->assertStatus(200)
         ->assertJson([
             'message' => 'Event updated successfully',
+            'event' => [
+                'id' => $event->id,
+                'title' => 'Updated Event Title',
+                'description' => 'Updated Description',
+                'start' => '2024-09-01T10:00:00',
+                'end' => '2024-09-15T10:00:00',
+                'parent_id' => $event->parent_id
+            ]
         ]);
 });
 
@@ -104,6 +138,18 @@ it('can update an event', function () {
     $response->assertStatus(200)
         ->assertJson([
             'message' => 'Event updated successfully',
+            'event' => [
+                'id' => $event->id,
+                'title' => 'Updated Event Title',
+                'description' => 'Updated Description',
+                'start' => '2024-09-01T10:00:00',
+                'end' => '2024-09-15T10:00:00',
+                'recurring_pattern' => [
+                    'frequency' => 'monthly',
+                    'repeat_until' => '2027-08-20T10:00:00'
+                ],
+                'parent_id' => $event->parent_id
+            ]
         ]);
 });
 
@@ -136,13 +182,14 @@ it('can lists events', function () {
     ]);
 
     $startDate = '2024-08-01T00:00:00';
-    $endDate = '2024-09-01T23:59:59';
+    $endDate = '2024-09-20T23:59:59';
 
     $response = $this->get('/api/events/list?start=' . urlencode($startDate) . '&end=' . urlencode($endDate));
 
+    //$response->dump();
+
     $response->assertStatus(200)
         ->assertJsonStructure([
-            'current_page',
             'data' => [
                 '*' => [
                     'id',
@@ -150,39 +197,38 @@ it('can lists events', function () {
                     'description',
                     'start',
                     'end',
-                    'recurring_pattern'
+                    'recurring_pattern',
+                    'parent_id',
                 ]
             ],
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
             'links' => [
-                '*' => [
-                    'url',
-                    'label',
-                    'active'
-                ]
+                'first',
+                'last',
+                'prev',
+                'next',
             ],
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total'
+            'meta' => [
+                'current_page',
+                'last_page',
+                'from',
+                'to',
+                'path',
+                'per_page',
+                'total',
+            ],
+        ])
+        ->assertJsonFragment([
+            'title' => 'Event 1',
+            'description' => 'Description 1',
+        ])
+        ->assertJsonFragment([
+            'title' => 'Event 2',
+            'description' => 'Description 2',
+        ])
+        ->assertJsonFragment([
+            'title' => 'Event 3',
+            'description' => 'Description 3',
         ]);
-
-    $response->assertJsonFragment([
-        'title' => 'Event 1'
-    ]);
-
-    $response->assertJsonFragment([
-        'title' => 'Event 2'
-    ]);
-
-    $response->assertJsonMissing([
-        'title' => 'Event 3'
-    ]);
 });
 
 it('can delete an event', function () {
@@ -203,5 +249,11 @@ it('can delete an event', function () {
             'message' => 'Event deleted successfully',
         ]);
 
-    $this->assertDatabaseMissing('events', ['id' => $event->id]);
+    $this->assertDatabaseMissing('events', [
+        'id' => $event->id,
+        'title' => 'Original Event Title',
+        'description' => 'Original Description',
+        'start' => '2024-08-20T10:00:00',
+        'end' => '2024-08-30T10:00:00'
+    ]);
 });

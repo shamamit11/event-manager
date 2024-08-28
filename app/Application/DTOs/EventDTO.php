@@ -11,7 +11,8 @@ class EventDTO
         public string $end,
         public bool $recurringPattern,
         public ?string $frequency,
-        public ?string $repeat_until
+        public ?string $repeat_until,
+        public ?int $parentId = null
     ) {
         $this->title = $title;
         $this->description = $description;
@@ -20,5 +21,6 @@ class EventDTO
         $this->recurringPattern = $recurringPattern;
         $this->frequency = $frequency;
         $this->repeat_until = $repeat_until;
+        $this->parentId = $parentId;
     }
 }

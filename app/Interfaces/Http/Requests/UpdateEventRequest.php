@@ -29,6 +29,7 @@ class UpdateEventRequest extends ApiRequest
                 'date_format:Y-m-d\TH:i:s',
                 'required_if:recurring_pattern,true',
             ],
+            'parent_id' => 'nullable|integer|exists:events,id'
         ];
     }
 }

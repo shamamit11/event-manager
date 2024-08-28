@@ -58,9 +58,9 @@ test('updates an event successfully', function () {
         ->andReturn($occurrences);
 
     $this->eventRepository
-        ->shouldReceive('deleteById')
+        ->shouldReceive('deleteOccurrencesByParentId')
         ->once()
-        ->with(1)
+        ->with($existingEvent->getId())
         ->andReturn();
 
     $this->eventRepository

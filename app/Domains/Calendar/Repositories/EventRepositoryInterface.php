@@ -13,4 +13,5 @@ interface EventRepositoryInterface
     public function findById(int $id): ?Event;
     public function findByDateRange(string $start, string $end, int $perPage = 15, int $page = 1): LengthAwarePaginator;
     public function deleteById(int $id): void;
+    public function deleteOccurrencesByParentId(int $parentId): void;
 }
