@@ -57,16 +57,12 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
 -   In your .env file, make changes as below:
 
-        ```bash
-
         DB_CONNECTION=mysql
         DB_HOST=mysql
         DB_PORT=3306
         DB_DATABASE=events
         DB_USERNAME=sail
         DB_PASSWORD=password
-
-        ```
 
 -   Make sure you have Docker Installed and Running, then run the following commands:
 
