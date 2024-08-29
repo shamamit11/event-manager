@@ -53,7 +53,42 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
-4. **Access the Application**
+4. **Run the application using Laravel Sail**
+
+-   In your .env file, make changes as below:
+
+        ```bash
+
+        DB_CONNECTION=mysql
+        DB_HOST=mysql
+        DB_PORT=3306
+        DB_DATABASE=events
+        DB_USERNAME=sail
+        DB_PASSWORD=password
+
+        ```
+
+-   Make sure you have Docker Installed and Running, then run the following commands:
+
+    ```bash
+
+    ./vendor/bin/sail up
+
+    ./vendor/bin/sail artisan migrate
+
+    ```
+
+5. **Start / Stop Sail**
+
+    ```bash
+
+    ./vendor/bin/sail up
+
+    ./vendor/bin/sail stop
+
+    ```
+
+6. **Access the Application**
 
 -   This application uses Laravel Request Docs for API Documentation.
 
