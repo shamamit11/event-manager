@@ -118,6 +118,8 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ./vendor/bin/pest
 
+    ./vendor/bin/sail artisan test (if you are using docker)
+
     ```
 
 # Payload Examples in JSON
