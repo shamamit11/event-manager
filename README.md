@@ -74,6 +74,16 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     ```
 
+-   You can now browse the application using the address below:
+
+    ```bash
+
+    http://localhost:8080/
+
+    http://localhost:8080/request-docs
+
+    ```
+
 5. **Start / Stop Sail**
 
     ```bash
@@ -115,6 +125,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 ## Creating an Event with Recurring Pattern
 
 -   Endpoint: http://127.0.0.1:8000/api/events
+-   Endpoint: http://localhost:8080/api/events (if you are using docker)
 
 -   Method: Post
 
@@ -136,6 +147,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 ## Creating an Event without Recurring Pattern
 
 -   Endpoint: http://127.0.0.1:8000/api/events
+-   Endpoint: http://localhost:8080/api/events (if you are using docker)
 
 -   Method: Post
 
@@ -153,6 +165,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 ## Updating an Event
 
 -   Endpoint: http://127.0.0.1:8000/api/events/1
+-   Endpoint: http://localhost:8080/api/events/1 (if you are using docker)
 
 -   Method: Put
 
@@ -175,6 +188,7 @@ This repository contains a Laravel application based on Domain Driven Design pri
 ## List Events within the Date Range
 
 -   Endpoint: http://127.0.0.1:8000/api/events/list?start=&end=&per_page=&page=
+-   Endpoint: http://localhost:8080/api/events/list?start=&end=&per_page=&page= (if you are using docker)
 
 -   Method: Get
 
@@ -182,16 +196,21 @@ This repository contains a Laravel application based on Domain Driven Design pri
 
     http://127.0.0.1:8000/api/events/list?start=2024-08-01T10:00:00&end=2024-08-30T10:00:00&per_page=10&page=1
 
+    http://localhost:8080/api/events/list?start=2024-08-01T10:00:00&end=2024-08-30T10:00:00&per_page=10&page=1 (Docker)
+
     ```
 
 ## Delete Event
 
 -   Endpoint: http://127.0.0.1:8000/api/event/1
+-   Endpoint: http://localhost:8080/api/event/1 (if you are using docker)
 
 -   Method: Delete
 
     ```bash
 
     http://127.0.0.1:8000/api/event/1
+
+    http://localhost:8080/api/event/1 (Docker)
 
     ```
